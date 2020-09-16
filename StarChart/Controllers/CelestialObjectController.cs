@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StarChart.Data;
+using StarChart.Models;
 
 namespace StarChart.Controllers
 {
@@ -17,5 +19,70 @@ namespace StarChart.Controllers
         {
             _context = context;
         }
+
+        [ActionName("GetById")]
+        [HttpGet("{id:int}")]
+        public IActionResult GetById(int id)
+        {
+            var obj = _context.CelestialObjects
+                .Where(s => s.Id == id)
+                .FirstOrDefault();
+
+            if (obj == null)
+                return NotFound();
+
+            List<CelestialObject> sat = _context.CelestialObjects
+                .Where(s => s.OrbitedObjectId == id)
+                .ToList();
+
+            obj.Satellites = sat;
+
+            return Ok(obj);
+
+        }
+
+        [HttpGet("{name}")]
+        public IActionResult GetByName(string name)
+        {
+            List <CelestialObject>obj = _context.CelestialObjects
+                   .Where(s => s.Name == name).ToList();
+
+            if (obj.Count == 0)
+                return NotFound();
+
+            foreach (var o in obj)
+            {
+                List<CelestialObject> sat = _context.CelestialObjects
+                .Where(s => s.OrbitedObjectId == o.Id)
+                .ToList();
+
+                o.Satellites = sat;
+
+            }
+
+            return Ok(obj);
+        }
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            List<CelestialObject> obj = _context.CelestialObjects.ToList();
+
+            if (obj.Count == 0)
+                return NotFound();
+
+            foreach (var o in obj)
+            {
+                List<CelestialObject> sat = _context.CelestialObjects
+                .Where(s => s.OrbitedObjectId == o.Id)
+                .ToList();
+
+                o.Satellites = sat;
+
+            }
+
+            return Ok(obj);
+        }
+
     }
 }
