@@ -24,16 +24,11 @@ namespace StarChart.Controllers
         [HttpGet("{id:int}")]
         public IActionResult GetById(int id)
         {
-            var obj = _context.CelestialObjects
-                .Where(s => s.Id == id)
-                .FirstOrDefault();
+            var obj = GetByIdHelper(id);
 
             if (obj == null)
                 return NotFound();
-
-            List<CelestialObject> sat = _context.CelestialObjects
-                .Where(s => s.OrbitedObjectId == id)
-                .ToList();
+            var sat = GetSattellitesHelper(id);
 
             obj.Satellites = sat;
 
@@ -41,26 +36,43 @@ namespace StarChart.Controllers
 
         }
 
+        private List<CelestialObject> GetSattellitesHelper(int id)
+        {
+            return _context.CelestialObjects
+                .Where(s => s.OrbitedObjectId == id)
+                .ToList();
+        }
+
+        private CelestialObject GetByIdHelper(int id)
+        {
+            return _context.CelestialObjects
+                .Where(s => s.Id == id)
+                .FirstOrDefault();
+        }
+
         [HttpGet("{name}")]
         public IActionResult GetByName(string name)
         {
-            List <CelestialObject>obj = _context.CelestialObjects
-                   .Where(s => s.Name == name).ToList();
+            var obj = GetByNameHelper(name);
 
             if (obj.Count == 0)
                 return NotFound();
 
             foreach (var o in obj)
             {
-                List<CelestialObject> sat = _context.CelestialObjects
-                .Where(s => s.OrbitedObjectId == o.Id)
-                .ToList();
+                List<CelestialObject> sat = GetSattellitesHelper(o.Id);
 
                 o.Satellites = sat;
 
             }
 
             return Ok(obj);
+        }
+
+        private List<CelestialObject> GetByNameHelper(string name)
+        {
+            return _context.CelestialObjects
+                   .Where(s => s.Name == name).ToList();
         }
 
         [HttpGet]
@@ -73,9 +85,7 @@ namespace StarChart.Controllers
 
             foreach (var o in obj)
             {
-                List<CelestialObject> sat = _context.CelestialObjects
-                .Where(s => s.OrbitedObjectId == o.Id)
-                .ToList();
+                List<CelestialObject> sat = GetSattellitesHelper(o.Id);
 
                 o.Satellites = sat;
 
@@ -96,9 +106,7 @@ namespace StarChart.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(int id,CelestialObject obj)
         {
-            var cObj = _context.CelestialObjects
-                .Where(s => s.Id == id)
-                .FirstOrDefault();
+            var cObj = GetByIdHelper(id);
 
             if (cObj == null) return NotFound();
 
@@ -115,9 +123,7 @@ namespace StarChart.Controllers
         [HttpPatch("{id}/{name}")]
         public IActionResult RenameObject(int id,string name)
         {
-            var cObj = _context.CelestialObjects
-                .Where(s => s.Id == id)
-                .FirstOrDefault();
+            var cObj = GetByIdHelper(id);
 
 
             if (cObj == null) return NotFound();
